@@ -18,6 +18,31 @@ class UserService {
       }
     }
 
+    async signIn( email , plainPassword){
+      try {
+        // step 1 -> fetch user by email
+        const user = await this.UserRepository.getByEmail( email ); 
+        console.log( "User in service layer , ", user);
+         console.log( "password in service layer , ", user.password);
+       
+         // step 2 -> compare the incoming password 
+        const passwordMatches = this.checkPassword(plainPassword, user.password );
+        if( !passwordMatches ){
+          console.log("Password does not match");
+          throw { error : "incorrect password" };
+        }
+        // step 3 -> create token if password matches
+        const newToken = this.createToken( { email : user.email , id: user.id } );
+        console.log( " New token created , ", newToken);
+        return newToken
+
+      } catch (error) {
+        console.log( "error in service layer ");
+        throw error;
+      }
+
+    }
+
     createToken( user ){
       try {
         const token = jwt.sign( 
