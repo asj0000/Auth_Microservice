@@ -1,6 +1,7 @@
 const UserRepository = require( '../repository/user-repository');
 const  jwt = require('jsonwebtoken');
 const {JWT_SECRET_KEY} = require('../config/serverConfig');
+const bcrypt = require('bcrypt');
 
 class UserService {
     constructor(){
@@ -44,6 +45,15 @@ class UserService {
         throw error; 
       }
 
+    }
+
+    checkPassword( userInputPassword, encryptedPassword ){
+      try {
+        return bcrypt.compareSync(userInputPassword, encryptedPassword);
+      } catch (error) {
+        console.error("Error not same password");
+        throw error; 
+      }
     }
 }
 
