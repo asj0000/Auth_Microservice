@@ -43,6 +43,25 @@ class UserService {
 
     }
 
+    async isAuthenticated( token ){
+      try {
+        const result = this.verifyToken( token ); // you will get { email: '', id: '' , iat: '' , exp: '' }
+        if( !result ){
+          throw { error : "Invalid Token "};
+        }
+
+        const user = await this.UserRepository.getById( result.id);
+        if( !user ){
+          throw { error : "User does not exist with the corresponding token" };
+        }
+        return user.id;
+        
+      } catch (error) {
+        console.error("Error in authenticating user in service layer");
+        throw error;
+      }
+    }
+
     createToken( user ){
       try {
         const token = jwt.sign( 
