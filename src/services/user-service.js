@@ -2,6 +2,9 @@ const UserRepository = require( '../repository/user-repository');
 const  jwt = require('jsonwebtoken');
 const {JWT_SECRET_KEY} = require('../config/serverConfig');
 const bcrypt = require('bcrypt');
+const AppError = require('../utils/error-handler');
+const ValidationError  = require('../utils/validation-error');
+const { StatusCodes } = require( 'http-status-codes');
 
 class UserService {
     constructor(){
@@ -13,8 +16,16 @@ class UserService {
         const user = await this.UserRepository.createUser( data );
         return user;
       }catch( error ){
-        console.log( "error in service layer ");
-        throw error;
+        if( error.name == "SequelizeValidationError"){
+          throw error;
+        }
+        // we are sending this error if our error is of some other type , it is not validation error
+        throw new AppError(
+          "Server Error ", 
+          "Something went wrong in service layer", 
+          "Logical Issue found",
+           500
+        );
       }
     }
 
@@ -22,9 +33,14 @@ class UserService {
       try {
         // step 1 -> fetch user by email
         const user = await this.UserRepository.getByEmail( email ); 
-        console.log( "User in service layer , ", user);
-         console.log( "password in service layer , ", user.password);
-       
+        // if (!user) {
+        //   throw new AppError(
+        //     "AppError",
+        //     "No user exists for the given email",
+        //     "Given Email Id does not exists",
+        //      StatusCodes.NOT_FOUND
+        //    );
+        // }
          // step 2 -> compare the incoming password 
         const passwordMatches = this.checkPassword(plainPassword, user.password );
         if( !passwordMatches ){
@@ -37,7 +53,7 @@ class UserService {
         return newToken
 
       } catch (error) {
-        console.log( "error in service layer ");
+        // console.log( "error in service layer ");
         throw error;
       }
 

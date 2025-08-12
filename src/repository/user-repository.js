@@ -1,3 +1,4 @@
+const ValidationError = require('../utils/validation-error');
 const { User } = require( '../models/index');
 const { Role } = require( '../models/index');
 
@@ -8,7 +9,10 @@ class UserRepository {
         const user = await User.create( data );
         return user;
       }catch( error ){
-        console.error("Error in creating user");
+        if( error.name === "SequelizeValidationError"){
+          throw new ValidationError(error);
+        }
+        console.log("Error" , error);
         throw error ;
       }
     }
@@ -49,9 +53,10 @@ class UserRepository {
           }
         }
        );
-        return user;
+       console.log("data returned from DB in repo layer in findOne function ", user);
+       return user;
       } catch (error) {
-        console.error("Error in fetching user by email");
+        console.error("Error in fetching user by email ", error);
         throw error ;
       }
     }
